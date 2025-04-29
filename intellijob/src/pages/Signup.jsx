@@ -1,6 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Mail, User, Lock, Eye, EyeOff, ArrowRight, Briefcase, Check } from "lucide-react";
 import "../styles/Signup.css";
+import { useNavigate } from "react-router-dom";
+import { auth } from "../services/firebase";
+import { createUserWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { useAuth } from "../context/Authcontext";
 
 export default function Signup() {
   const [formData, setFormData] = useState({
@@ -8,16 +12,26 @@ export default function Signup() {
     email: "",
     password: "",
   });
-  
   const [showPassword, setShowPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState(0);
-  
+  const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+  const { currentUser } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (currentUser) {
+      navigate('/login');
+    }
+  }, [currentUser, navigate]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    
+
     if (name === "password") {
-      // Simple password strength checker
+      // Password strength checker
       let strength = 0;
       if (value.length > 6) strength += 1;
       if (value.match(/[A-Z]/)) strength += 1;
@@ -26,13 +40,31 @@ export default function Signup() {
       setPasswordStrength(strength);
     }
   };
-  
-  const handleSubmit = (e) => {
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log("Form submitted:", formData);
-    // Add your signup logic here
+    setError("");
+    setIsLoading(true);
+
+    try {
+      // Create user with email and password
+      const userCredential = await createUserWithEmailAndPassword(auth, formData.email, formData.password);
+      // Update user profile with username
+      await updateProfile(userCredential.user, { displayName: formData.username });
+      navigate('/dashboard');
+    } catch (err) {
+      if (err.code === 'auth/email-already-in-use') {
+        setError('This email is already registered. Please log in.');
+      } else if (err.code === 'auth/weak-password') {
+        setError('Password is too weak. Please use a stronger password.');
+      } else {
+        setError('Failed to create account. Please try again.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
-  
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -47,10 +79,16 @@ export default function Signup() {
             </div>
             <span className="text-3xl font-bold text-primary">IntelliJob</span>
           </div>
-          
+
           <h1>Create your account</h1>
           <p className="signup-subtitle">Join thousands of job seekers finding their perfect match</p>
-          
+
+          {error && (
+            <div className="error-message" style={{ color: 'red', marginBottom: '1rem' }}>
+              <span>{error}</span>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit}>
             <div className="input-group">
               <label htmlFor="username">Username</label>
@@ -67,7 +105,7 @@ export default function Signup() {
                 />
               </div>
             </div>
-            
+
             <div className="input-group">
               <label htmlFor="email">Email Address</label>
               <div className="input-container">
@@ -83,7 +121,7 @@ export default function Signup() {
                 />
               </div>
             </div>
-            
+
             <div className="input-group">
               <label htmlFor="password">Password</label>
               <div className="input-container">
@@ -98,21 +136,21 @@ export default function Signup() {
                   required
                   minLength="6"
                 />
-                <button 
-                  type="button" 
-                  onClick={togglePasswordVisibility} 
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
                   className="password-toggle"
                 >
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
-              
+
               {formData.password && (
                 <div className="password-strength">
                   <div className="strength-bars">
                     {[...Array(4)].map((_, index) => (
-                      <div 
-                        key={index} 
+                      <div
+                        key={index}
                         className={`strength-bar ${index < passwordStrength ? `strength-${passwordStrength}` : ""}`}
                       ></div>
                     ))}
@@ -127,21 +165,29 @@ export default function Signup() {
                 </div>
               )}
             </div>
-            
-            <button type="submit" className="signup-button">
-              Create Account <ArrowRight size={18} />
+
+            <button
+              type="submit"
+              className={`signup-button ${isLoading ? 'loading' : ''}`}
+              disabled={isLoading}
+            >
+              {isLoading ? 'Creating Account...' : (
+                <>
+                  Create Account <ArrowRight size={18} />
+                </>
+              )}
             </button>
           </form>
-          
+
           <div className="login-link">
             Already have an account? <a href="/login">Log in</a>
           </div>
         </div>
-        
+
         <div className="signup-right">
           <div className="benefits">
             <h2>Why join IntelliJob?</h2>
-            
+
             <div className="benefit-item">
               <div className="benefit-icon">
                 <Briefcase size={24} />
@@ -151,7 +197,7 @@ export default function Signup() {
                 <p>Browse thousands of curated job listings tailored to your profile</p>
               </div>
             </div>
-            
+
             <div className="benefit-item">
               <div className="benefit-icon">
                 <Check size={24} />
@@ -161,7 +207,7 @@ export default function Signup() {
                 <p>Our AI technology matches you with jobs that fit your skills and preferences</p>
               </div>
             </div>
-            
+
             <div className="benefit-item">
               <div className="benefit-icon">
                 <User size={24} />
@@ -171,7 +217,7 @@ export default function Signup() {
                 <p>Showcase your skills and experience to stand out to employers</p>
               </div>
             </div>
-            
+
             <div className="testimonial">
               <p>"IntelliJob helped me land my dream job in just two weeks. The platform is intuitive and the job matches were spot-on!"</p>
               <div className="testimonial-author">

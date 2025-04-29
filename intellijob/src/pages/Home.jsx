@@ -82,7 +82,7 @@ const Home = () => {
   return (
     <div className="home-container">
       {/* Header with Logo */}
-      <header className="header">
+      {/* <header className="header">
         <div className="flex items-center gap-2">
           <div className="logo-container">
             <span className="logo-text">IJ</span>
@@ -94,7 +94,7 @@ const Home = () => {
           <Link to="/profile">Profile</Link>
           <Link to="/settings">Settings</Link>
         </nav>
-      </header>
+      </header> */}
 
       {/* Hero Section with Carousel */}
       <section className="hero-section">
