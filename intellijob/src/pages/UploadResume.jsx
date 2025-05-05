@@ -502,7 +502,7 @@ const UploadResume = () => {
                                 </div>
                                 
                                 <div className="job-actions">
-                                  <button className="apply-button">Apply Now</button>
+                                  <button onClick={handleapply} className="apply-button">Apply Now</button>
                                   <button className="save-button">Save Job</button>
                                 </div>
                               </div>

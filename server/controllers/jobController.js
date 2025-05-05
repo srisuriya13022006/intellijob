@@ -16,7 +16,8 @@ const matchJobs = async (req, res) => {
       if (!skills || !Array.isArray(skills)) {
         return res.status(400).json({ error: 'Skills array required for POST request' });
       }
-    } else {
+    } 
+    else {
       // For GET /jobs, fetch skills from the user's latest resume
       const user = await User.findOne({ firebaseUid: req.user.uid });
       if (!user) {

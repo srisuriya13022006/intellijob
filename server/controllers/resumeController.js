@@ -55,7 +55,7 @@ const uploadResume = async (req, res) => {
             parsedText += decodeURIComponent(text.R[0].T) + ' ';
           }
         }
-
+              
         // Mock analysis (replace with actual logic)
         const skills = parsedText.match(/React|JavaScript|Node\.js|TypeScript|Python/gi) || [];
         const analysis = {
@@ -74,7 +74,7 @@ const uploadResume = async (req, res) => {
             { skill: 'TypeScript', priority: 'High' }
           ],
           overallMatch: skills.length > 3 ? 86 : 80,
-          industryAlignment: { technology: 92, finance: 65, healthcare: 40 },
+          industryAlignment: { technology: 91, finance: 65, healthcare: 40 },
           careerPaths: [
             { title: 'Senior Developer', match: 95 },
             { title: 'Technical Lead', match: 82 }
@@ -107,7 +107,8 @@ const uploadResume = async (req, res) => {
     });
 
     pdfParser.loadPDF(pdfPath);
-  } catch (error) {
+  } 
+  catch (error) {
     console.error('Upload error:', error);
     res.status(500).json({ error: error.message || 'Something went wrong' });
   }
